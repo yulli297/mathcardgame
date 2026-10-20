@@ -67,8 +67,13 @@ button{font-family:inherit;cursor:pointer}
 .q-panel{display:flex;flex-direction:column;justify-content:center}
 
 /* 연습장: 그림 | 연습장 | 문제 3칸 */
-.problem-wrap.pad{grid-template-columns:.8fr 1.15fr 1fr;gap:1.4vw}
-.problem-wrap.pad.nofig{grid-template-columns:1.7fr 1fr}
+/* 기본(오른손잡이): 그림 | 문제 | 연습장(오른쪽) — 왼손잡이: 연습장(왼쪽) | 문제 | 그림 */
+.problem-wrap.pad{grid-template-columns:.8fr 1fr 1.15fr;gap:1.4vw}
+.problem-wrap.pad .figs-panel{order:1}.problem-wrap.pad .q-panel{order:2}.problem-wrap.pad .pad-panel{order:3}
+.problem-wrap.pad.nofig{grid-template-columns:1fr 1.7fr}
+.problem-wrap.pad.lefty{grid-template-columns:1.15fr 1fr .8fr}
+.problem-wrap.pad.lefty .figs-panel{order:3}.problem-wrap.pad.lefty .pad-panel{order:1}
+.problem-wrap.pad.nofig.lefty{grid-template-columns:1.7fr 1fr}
 .problem-wrap.pad .panel{padding:2vh 1.2vw}
 .problem-wrap.pad .figs svg{width:min(24vw,46vh);max-height:36vh}
 .problem-wrap.pad .qtext{font-size:clamp(15px,2.8vh,24px)}

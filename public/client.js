@@ -175,6 +175,10 @@ function initPad() {
   const end = () => { cur = null; };
   cv.onpointerup = end; cv.onpointercancel = end;
   app.querySelectorAll('[data-tool]').forEach(b => b.onclick = () => { scratch.tool = b.dataset.tool; marks(); });
+  $('#padHand').onclick = e => {                 // 연습장을 왼쪽/오른쪽으로 옮김 (필기는 그대로 유지)
+    const on = !store.get('lefty'); store.set('lefty', on);
+    e.currentTarget.classList.toggle('on', on); app.querySelector('.problem-wrap').classList.toggle('lefty', on); initPad();
+  };
   $('#padUndo').onclick = () => { scratch.strokes.pop(); redraw(); };
   $('#padClear').onclick = () => { scratch.strokes = []; redraw(); };
   marks(); redraw();
@@ -188,13 +192,15 @@ function renderProblem() {
     : `<div class="ans"><input id="in" inputmode="decimal" autocomplete="off" placeholder="?"><span>${esc(p.unit)}</span><button class="btn" id="ok">확인</button></div>`;
   if (scratch.pid !== p.id) { scratch.pid = p.id; scratch.strokes = []; }   // 새 문제면 연습장을 비움 (같은 문제에서 오답 후 다시 그려져도 유지)
   const noFig = p.type === 'compare' || p.type === 'point';   // 그림이 필요 없는 문제는 그림 칸을 빼고 연습장을 넓게 (여러 식을 계산해야 해서)
-  app.innerHTML = topbar() + `<div class="screen"><div class="problem-wrap pad ${noFig ? 'nofig' : ''}">
+  const lefty = !!store.get('lefty');   // 왼손잡이 설정은 이 기기에 기억해 둠 (연습장이 왼쪽으로 옴)
+  app.innerHTML = topbar() + `<div class="screen"><div class="problem-wrap pad ${noFig ? 'nofig' : ''} ${lefty ? 'lefty' : ''}">
     ${noFig ? '' : `<div class="panel figs-panel"><div class="figs ${p.figs.length > 2 ? 'many' : p.figs.length === 2 ? 'two' : ''}">${p.figs.map(f => `<div class="fig">${f.svg}<div class="cap">${esc(f.cap)}</div></div>`).join('')}</div></div>`}
     <div class="panel pad-panel">
       <div class="pad-tools">
         <button data-tool="white" class="pt"><i style="background:#f3ead6"></i>펜</button>
         <button data-tool="erase" class="pt">지우개</button>
         <span class="sp"></span>
+        <button id="padHand" class="pt ${lefty ? 'on' : ''}">왼손잡이</button>
         <button id="padUndo" class="pt">되돌리기</button>
         <button id="padClear" class="pt">모두 지우기</button>
       </div>
