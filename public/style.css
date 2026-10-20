@@ -65,6 +65,23 @@ button{font-family:inherit;cursor:pointer}
 .figs.two svg{height:34vh;max-width:24vw}
 .figs.many svg{height:20vh;max-width:15vw}
 .q-panel{display:flex;flex-direction:column;justify-content:center}
+
+/* 연습장: 그림 | 연습장 | 문제 3칸 */
+.problem-wrap.pad{grid-template-columns:.8fr 1.15fr 1fr;gap:1.4vw}
+.problem-wrap.pad .panel{padding:2vh 1.2vw}
+.problem-wrap.pad .figs svg{width:min(24vw,46vh);max-height:36vh}
+.problem-wrap.pad .qtext{font-size:clamp(15px,2.8vh,24px)}
+.problem-wrap.pad .ans input{width:11vw}
+.problem-wrap.pad .opt{height:18vh}.problem-wrap.pad .opt svg{height:13vh;max-width:11vw}
+.pad-panel{display:flex;flex-direction:column;gap:1vh;min-width:0;padding:1.2vh .8vw!important}
+.pad-tools{display:flex;gap:.4vw;align-items:center;flex-wrap:wrap}
+.pad-tools .sp{flex:1}
+.pt{display:inline-flex;align-items:center;gap:.4vw;border:1px solid var(--line);border-radius:5px;background:linear-gradient(180deg,#3a3129,#1c1714);color:var(--ink);
+  padding:.7vh .7vw;font-size:clamp(11px,1.9vh,15px);white-space:nowrap}
+.pt i{display:inline-block;width:1.6vh;height:1.6vh;border-radius:50%;border:1px solid #000}
+.pt.on{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold),0 0 10px rgba(232,184,90,.5);color:#fff3c4}
+#pad{flex:1;min-height:0;width:100%;border-radius:6px;border:1px solid #000;touch-action:none;cursor:crosshair;
+  background:#12100c;background-image:linear-gradient(rgba(232,184,90,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(232,184,90,.07) 1px,transparent 1px);background-size:3.2vh 3.2vh}
 .qtag{align-self:flex-start;font-size:clamp(11px,1.8vh,14px);color:var(--gold);border:1px solid var(--gold2);padding:.3vh .8vw;margin-bottom:1.6vh;border-radius:3px}
 .qtext{font-size:clamp(16px,3.1vh,26px);line-height:1.55;margin:0 0 3vh}
 .qtext b{color:var(--gold)}

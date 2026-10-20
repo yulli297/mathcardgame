@@ -133,17 +133,79 @@ function renderLobby() {
   $('#go').onclick = () => { tryLandscape(); modal(HOWTO_GAME, () => socket.emit('start')); };
   $('#out').onclick = () => { store.del('login'); location.reload(); };
 }
+// ---------- 연습장 (펜/손가락으로 풀이 적기) ----------
+// 획을 0~1 비율 좌표로 저장해서 화면 크기가 바뀌어도 그대로 다시 그려요. 문제가 바뀌면 지워져요.
+const scratch = { pid: null, strokes: [], tool: 'white', penSeen: false };
+const PAD_COLORS = { white: '#f3ead6', yellow: '#ffd35c', cyan: '#6fd8ff' };
+function initPad() {
+  const cv = $('#pad'); if (!cv) return;
+  const dpr = window.devicePixelRatio || 1, r = cv.getBoundingClientRect();
+  cv.width = Math.max(1, Math.round(r.width * dpr)); cv.height = Math.max(1, Math.round(r.height * dpr));
+  const ctx = cv.getContext('2d'); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  const redraw = () => {
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    for (const s of scratch.strokes) {
+      ctx.globalCompositeOperation = s.erase ? 'destination-out' : 'source-over';
+      ctx.strokeStyle = s.color; ctx.lineWidth = s.w * dpr;
+      ctx.beginPath(); ctx.moveTo(s.pts[0][0] * cv.width, s.pts[0][1] * cv.height);
+      for (const p of s.pts.slice(1)) ctx.lineTo(p[0] * cv.width, p[1] * cv.height);
+      ctx.stroke();
+    }
+    ctx.globalCompositeOperation = 'source-over';
+  };
+  const marks = () => app.querySelectorAll('[data-tool]').forEach(b => b.classList.toggle('on', b.dataset.tool === scratch.tool));
+  const pt = e => { const b = cv.getBoundingClientRect(); return [(e.clientX - b.left) / b.width, (e.clientY - b.top) / b.height]; };
+  let cur = null;
+  cv.onpointerdown = e => {
+    if (e.pointerType === 'pen') scratch.penSeen = true;
+    if (e.pointerType === 'touch' && scratch.penSeen) return;          // 펜을 쓰는 중이면 손바닥 터치는 무시
+    e.preventDefault(); cv.setPointerCapture(e.pointerId);
+    const erase = scratch.tool === 'erase', p = pt(e);
+    cur = { erase, color: PAD_COLORS[scratch.tool] || '#fff', w: erase ? 26 : 3.4, pts: [p, p] };
+    scratch.strokes.push(cur); redraw();
+  };
+  cv.onpointermove = e => {
+    if (!cur) return; e.preventDefault();
+    const a = cur.pts[cur.pts.length - 1], p = pt(e); cur.pts.push(p);
+    ctx.globalCompositeOperation = cur.erase ? 'destination-out' : 'source-over';   // 새 구간만 이어 그려서 가볍게
+    ctx.strokeStyle = cur.color; ctx.lineWidth = cur.w * dpr;
+    ctx.beginPath(); ctx.moveTo(a[0] * cv.width, a[1] * cv.height); ctx.lineTo(p[0] * cv.width, p[1] * cv.height); ctx.stroke();
+    ctx.globalCompositeOperation = 'source-over';
+  };
+  const end = () => { cur = null; };
+  cv.onpointerup = end; cv.onpointercancel = end;
+  app.querySelectorAll('[data-tool]').forEach(b => b.onclick = () => { scratch.tool = b.dataset.tool; marks(); });
+  $('#padUndo').onclick = () => { scratch.strokes.pop(); redraw(); };
+  $('#padClear').onclick = () => { scratch.strokes = []; redraw(); };
+  marks(); redraw();
+}
+window.addEventListener('resize', () => { if ($('#pad')) initPad(); });
+
 function renderProblem() {
   const p = S.problem; if (!p) return;
   const answer = p.options
     ? `<div class="opts">${p.options.map((svg, i) => `<button class="opt" data-i="${i}"><span class="no">${'①②③④'[i]}</span>${svg}</button>`).join('')}</div>`
     : `<div class="ans"><input id="in" inputmode="decimal" autocomplete="off" placeholder="?"><span>${esc(p.unit)}</span><button class="btn" id="ok">확인</button></div>`;
-  app.innerHTML = topbar() + `<div class="screen"><div class="problem-wrap">
+  if (scratch.pid !== p.id) { scratch.pid = p.id; scratch.strokes = []; }   // 새 문제면 연습장을 비움 (같은 문제에서 오답 후 다시 그려져도 유지)
+  app.innerHTML = topbar() + `<div class="screen"><div class="problem-wrap pad">
     <div class="panel figs-panel"><div class="figs ${p.figs.length > 2 ? 'many' : p.figs.length === 2 ? 'two' : ''}">${p.figs.map(f => `<div class="fig">${f.svg}<div class="cap">${esc(f.cap)}</div></div>`).join('')}</div></div>
+    <div class="panel pad-panel">
+      <div class="pad-tools">
+        <button data-tool="white" class="pt"><i style="background:#f3ead6"></i>흰색</button>
+        <button data-tool="yellow" class="pt"><i style="background:#ffd35c"></i>노랑</button>
+        <button data-tool="cyan" class="pt"><i style="background:#6fd8ff"></i>파랑</button>
+        <button data-tool="erase" class="pt">지우개</button>
+        <span class="sp"></span>
+        <button id="padUndo" class="pt">되돌리기</button>
+        <button id="padClear" class="pt">모두 지우기</button>
+      </div>
+      <canvas id="pad"></canvas>
+    </div>
     <div class="panel q-panel" id="qp"><span class="qtag">${esc(p.label)}</span><p class="qtext">${p.text}</p>${answer}
       <div class="fb ${S.feedback ? 'bad' : ''}">${S.feedback ? '아쉬워요! 다시 풀어 보세요.' : ''}</div></div>
   </div></div>`;
   if (S.feedback && Date.now() - S.feedback.at < 1500) $('#qp').classList.add('shake');
+  initPad();
   if (p.options) app.querySelectorAll('.opt').forEach(b => b.onclick = () => socket.emit('answer', { value: b.dataset.i }));
   else { const inp = $('#in'); inp.focus(); const go = () => { if (inp.value.trim()) socket.emit('answer', { value: inp.value }); };
     $('#ok').onclick = go; inp.onkeydown = e => { if (e.key === 'Enter') go(); }; }
