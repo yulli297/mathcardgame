@@ -81,7 +81,7 @@ class Battle {
       if (!atks.length) continue;
       let normal = 0, pierce = 0;
       for (const id of atks) {
-        const c = CARDS[id]; let dmg = (c.dmgLost ? a.maxHp - a.hp : c.dmg) + a.buff;
+        const c = CARDS[id]; let dmg = (c.dmgLost ? Math.round((a.maxHp - a.hp) * c.dmgLost) : c.dmg) + a.buff;
         if (c.doubleVsShield && ed.shield > 0) dmg *= 2;
         if (c.pierce) pierce += dmg; else normal += dmg;
       }
@@ -135,7 +135,7 @@ function botScore(id, me, op, hand) {
     if (c.doubleVsShield) exp = 0.65 * d + 0.35 * Math.max(0, 2 * d - 2.8);
     sc += 1.2 * exp + (d >= op.hp ? 8 : 0) + (me.buff ? 1 : 0);
   }
-  if (c.dmgLost) { const d = me.maxHp - me.hp + me.buff; sc += 1.2 * (0.65 * d + 0.35 * Math.max(0, d - 2.8)) + (d >= op.hp ? 8 : 0); }
+  if (c.dmgLost) { const d = Math.round((me.maxHp - me.hp) * c.dmgLost) + me.buff; sc += 1.2 * (0.65 * d + 0.35 * Math.max(0, d - 2.8)) + (d >= op.hp ? 8 : 0); }
   if (c.fillMp) sc += ({ 0: 7, 1: 6, 2: 5, 3: 3, 4: 2 }[me.mp] ?? 0) + 1.5;
   if (c.buffNext) sc += 1.8;
   if (c.reflect) sc += 1.8;

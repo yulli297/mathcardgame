@@ -43,7 +43,7 @@ const CARDS = {
   joker:        { name: '조커',        type: 'skill',   cost: 1, joker: true, unique: true },
   mirror:       { name: '반사 거울',   type: 'skill',   cost: 1, reflect: true },
   manasurge:    { name: '마나 폭주',   type: 'skill',   cost: 2, fillMp: true, buffNext: 2, unique: true },
-  comeback:     { name: '역전의 일격', type: 'attack',  cost: 4, dmg: 0, dmgLost: true, unique: true },
+  comeback:     { name: '역전의 일격', type: 'attack',  cost: 4, dmg: 0, dmgLost: 0.7, unique: true },
 
   // ---------- 가뭄 덱 전용 (비싸거나 보너스가 없는 구조적 약점, 시뮬레이션 승률 약 20%) ----------
   rusty_sword:  { name: '녹슨 대검',   type: 'attack',  cost: 4, dmg: 4, drought: true },
@@ -61,7 +61,7 @@ const DROUGHT_POOL = ['rusty_sword', 'rusty_sword', 'dull_spear', 'cracked', 'we
 function describe(c) {
   const s = [];
   if (c.dmg) s.push(`피해 ${c.dmg}`);
-  if (c.dmgLost) s.push('내가 잃은 HP만큼 피해 (덱에 1장만)');
+  if (c.dmgLost) s.push(`내가 잃은 HP의 ${Math.round(c.dmgLost * 100)}% 피해, 반올림 (덱에 1장만)`);
   if (c.fillMp) s.push('MP를 가득 채움 (덱에 1장만)');
   if (c.pierce) s.push('방어 무시');
   if (c.doubleVsShield) s.push('상대가 방어하면 피해 2배');
