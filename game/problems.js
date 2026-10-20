@@ -205,10 +205,12 @@ function makeProblem(type) {
         options: opts.map(o => `<span class="otext">${o}</span>`), answer: vals.indexOf(e), meta: { A, B, correct: qs(e), opts } };
     }
     if (type === 'inverse') {
-      const g = genExact({ qd: 1, r: 0 });            // 몫 자연수, 나누는 수 소수 첫째 자리 → 답이 소수 첫째 자리 이내
       if (Math.random() < 0.5) {
-        return { type, text: `□ 안에 알맞은 수를 구하세요. ${b('□ ÷ ' + g.V + ' = ' + g.Q)}`, figs: [{ svg: longDivSVG(g.V, '?', g.Q), cap: '나누어지는 수는?' }], answer: Number(g.D), unit: '', meta: { ...g, ask: 'D' } };
+        // 곱셈식 □ × (소수) = (소수) → 나눗셈으로 □ 구하기 (□ = D ÷ V)
+        const g = genExact();
+        return { type, text: `□ 안에 알맞은 수를 구하세요. ${b('□ × ' + g.V + ' = ' + g.D)}`, figs: [{ svg: longDivSVG(g.V, g.D, '?'), cap: '나눗셈으로 바꾸어 구해요' }], answer: Number(g.Q), unit: '', meta: { ...g, ask: 'Q' } };
       }
+      const g = genExact({ qd: 1, r: 0 });            // 몫 자연수, 나누는 수 소수 첫째 자리 → 답이 소수 첫째 자리 이내
       return { type, text: `□ 안에 알맞은 수를 구하세요. ${b(g.D + ' ÷ □ = ' + g.Q)}`, figs: [{ svg: longDivSVG('?', g.D, g.Q), cap: '나누는 수는?' }], answer: Number(g.V), unit: '', meta: { ...g, ask: 'V' } };
     }
     // compare: 몫이 가장 큰 / 가장 작은 식 고르기
