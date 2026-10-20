@@ -187,8 +187,9 @@ function renderProblem() {
     ? `<div class="opts">${p.options.map((svg, i) => `<button class="opt" data-i="${i}"><span class="no">${'①②③④'[i]}</span>${svg}</button>`).join('')}</div>`
     : `<div class="ans"><input id="in" inputmode="decimal" autocomplete="off" placeholder="?"><span>${esc(p.unit)}</span><button class="btn" id="ok">확인</button></div>`;
   if (scratch.pid !== p.id) { scratch.pid = p.id; scratch.strokes = []; }   // 새 문제면 연습장을 비움 (같은 문제에서 오답 후 다시 그려져도 유지)
-  app.innerHTML = topbar() + `<div class="screen"><div class="problem-wrap pad">
-    <div class="panel figs-panel"><div class="figs ${p.figs.length > 2 ? 'many' : p.figs.length === 2 ? 'two' : ''}">${p.figs.map(f => `<div class="fig">${f.svg}<div class="cap">${esc(f.cap)}</div></div>`).join('')}</div></div>
+  const noFig = p.type === 'compare';   // 그림이 필요 없는 문제는 그림 칸을 빼고 연습장을 넓게 (여러 식을 계산해야 해서)
+  app.innerHTML = topbar() + `<div class="screen"><div class="problem-wrap pad ${noFig ? 'nofig' : ''}">
+    ${noFig ? '' : `<div class="panel figs-panel"><div class="figs ${p.figs.length > 2 ? 'many' : p.figs.length === 2 ? 'two' : ''}">${p.figs.map(f => `<div class="fig">${f.svg}<div class="cap">${esc(f.cap)}</div></div>`).join('')}</div></div>`}
     <div class="panel pad-panel">
       <div class="pad-tools">
         <button data-tool="white" class="pt"><i style="background:#f3ead6"></i>흰색</button>
