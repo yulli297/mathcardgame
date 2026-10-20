@@ -62,6 +62,7 @@ class Battle {
     });
     // 1순위: 스킬 (자기에게만 적용)
     this.sides.forEach((s, i) => { for (const id of effs[i].fired) { const c = CARDS[id]; if (c.type !== 'skill') continue;
+      if (c.fillMp) { const before = s.mp; s.mp = s.maxMp; effs[i].mpGain += s.mp - before; }
       if (c.gainMp) { const before = s.mp; s.mp = Math.min(s.maxMp, s.mp + c.gainMp); effs[i].mpGain += s.mp - before; }
       if (c.heal) { const before = s.hp; s.hp = Math.min(s.maxHp, s.hp + c.heal); effs[i].healed += s.hp - before; }
       if (c.buffNext) s.nextBuff += c.buffNext;
@@ -80,7 +81,7 @@ class Battle {
       if (!atks.length) continue;
       let normal = 0, pierce = 0;
       for (const id of atks) {
-        const c = CARDS[id]; let dmg = c.dmg + a.buff;
+        const c = CARDS[id]; let dmg = (c.dmgLost ? a.maxHp - a.hp : c.dmg) + a.buff;
         if (c.doubleVsShield && ed.shield > 0) dmg *= 2;
         if (c.pierce) pierce += dmg; else normal += dmg;
       }
@@ -134,6 +135,8 @@ function botScore(id, me, op, hand) {
     if (c.doubleVsShield) exp = 0.65 * d + 0.35 * Math.max(0, 2 * d - 2.8);
     sc += 1.2 * exp + (d >= op.hp ? 8 : 0) + (me.buff ? 1 : 0);
   }
+  if (c.dmgLost) { const d = me.maxHp - me.hp + me.buff; sc += 1.2 * (0.65 * d + 0.35 * Math.max(0, d - 2.8)) + (d >= op.hp ? 8 : 0); }
+  if (c.fillMp) sc += ({ 0: 7, 1: 6, 2: 5, 3: 3, 4: 2 }[me.mp] ?? 0) + 1.5;
   if (c.buffNext) sc += 1.8;
   if (c.reflect) sc += 1.8;
   if (c.joker) sc += hand.filter(x => x !== id).reduce((t, x) => t + botScore(x, me, op, []) + 0.3 * CARDS[x].cost, 0) * 1.05;

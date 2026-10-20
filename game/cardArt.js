@@ -128,6 +128,15 @@ const ART = {
     <path d="M96 66 L96 88 M118 54 L118 98" stroke="#4f340c" stroke-width="2"/><ellipse cx="146" cy="71" rx="8" ry="37" fill="#2a1a06" stroke="url(#gold)" stroke-width="2"/>
     <path d="M44 100 Q38 112 52 114" stroke="url(#leather)" stroke-width="5" fill="none" stroke-linecap="round"/>
     <path d="M166 50 Q182 71 166 92 M176 40 Q198 71 176 102" stroke="#ff7a3d" stroke-width="3" fill="none" stroke-linecap="round" opacity=".9"/>` + sparks('#ffd08a', [[60, 40, 1.6], [34, 70, 1.3], [170, 24, 1.4], [120, 124, 1.5]]),
+  manasurge: () => `<ellipse cx="100" cy="74" rx="70" ry="56" fill="url(#arcane)" opacity=".55" filter="url(#glow)"/>` + runeRing('#8fe0ff', 52) +
+    `<path d="M100 18 L124 56 L110 120 L90 120 L76 56 Z" fill="#bff2ff" stroke="#0b2a4a" stroke-width="1.5" opacity=".95"/><path d="M100 18 L110 120 L100 110 Z" fill="#fff" opacity=".4"/>
+     <path d="M54 94 L36 70 L58 74 L44 48 M146 94 L164 70 L142 74 L156 48" stroke="#9fe7ff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>` +
+    sparks('#e8fbff', [[40, 30, 2], [162, 28, 1.8], [24, 100, 1.4], [176, 96, 1.6], [100, 8, 1.6]]),
+  comeback: () => `<ellipse cx="100" cy="84" rx="84" ry="56" fill="url(#blood)" opacity=".55" filter="url(#glow)"/>
+    <path d="M30 128 Q60 96 74 60 Q92 80 100 40 Q110 80 128 56 Q140 96 172 128 Z" fill="#2a0a0c" opacity=".9"/>` +
+    sword({ x: 100, y: 76, rot: 0, len: .92 }) +
+    `<path d="M62 118 Q100 92 138 118" stroke="#ff2e3f" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M52 126 Q100 96 148 126" stroke="#ffb3b8" stroke-width="1.5" fill="none" opacity=".7"/>` +
+    sparks('#ff7a7a', [[56, 40, 2], [146, 36, 1.8], [34, 84, 1.4], [168, 82, 1.6]]),
   rusty_sword: () => sword({ rot: -30, blade: 'url(#rust)', edge: '#2a180c' }) + sparks('#5a3a1a', [[96, 58, 3], [108, 44, 2.4], [90, 74, 2]]),
   dull_spear: () => `<g transform="translate(100 72) rotate(-40)"><rect x="-3" y="-24" width="6" height="84" rx="2" fill="url(#leather)"/><path d="M0,-60 L10,-26 L0,-20 L-10,-26 Z" fill="url(#rust)" stroke="#2a180c" stroke-width="1.5"/><path d="M-10 -26 L-4 -30" stroke="#2a180c"/></g>`,
   cracked: () => heater('url(#rust)', 'url(#dark)', `<path d="M100 28 L92 54 L106 70 L94 92 L100 118" stroke="#050505" stroke-width="3.5" fill="none"/><path d="M92 54 L76 60 M106 70 L124 64" stroke="#050505" stroke-width="2" fill="none"/>`),
