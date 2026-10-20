@@ -4,7 +4,7 @@
 
 const CONFIG = {
   HP: 15,               // 시작 HP (= 최대 HP)
-  MP: 5,                // 시작 MP (= 최대 MP)
+  MP: 7,                // 시작 MP (= 최대 MP)
   TURN_SECONDS: 15,     // 한 턴 선택 제한 시간(초). 넘기면 자동 패스
   REVEAL_SECONDS: 3,    // 카드 공개 후 다음 턴까지 보여 주는 시간(초)
   DECK_SIZE: 18,        // 덱 총량
@@ -30,11 +30,14 @@ const CARDS = {
   heavy:        { name: '강타', type: 'attack',  cost: 3, dmg: 4 },
   pierce:       { name: '암살',     type: 'attack',  cost: 3, dmg: 3, pierce: true },
   ultimate:     { name: '무차별공격',      type: 'attack',  cost: 4, dmg: 5 },
+  dragon:       { name: '용의 일격',   type: 'attack',  cost: 5, dmg: 7 },
   guard:        { name: '단단한 방패', type: 'defense', cost: 2, shield: 3, blockBonus: 1 },
   fortress:     { name: '철벽',        type: 'defense', cost: 3, shield: 4, blockBonus: 1 },
   managuard:    { name: '마나 방패',   type: 'defense', cost: 2, shield: 3, blockBonus: 1, mpOnBlock: 1 },
+  thornshield:  { name: '가시 방패',   type: 'defense', cost: 3, shield: 3, mpOnBlock: 2 },
   meditate:     { name: '명상',        type: 'skill',   cost: 1, gainMp: 3, shield: 2 },
   focus:        { name: '집중',        type: 'skill',   cost: 1, buffNext: 2 },
+  warcry:       { name: '전투 함성',   type: 'skill',   cost: 1, buffNext: 3 },
   firstaid:     { name: '응급 처치',   type: 'skill',   cost: 1, heal: 2 },
   potion:       { name: '회복 물약',   type: 'skill',   cost: 3, heal: 4 },
   joker:        { name: '조커',        type: 'skill',   cost: 1, joker: true, unique: true },
@@ -48,8 +51,8 @@ const CARDS = {
 };
 
 const BASE_DECK = ['base_attack', 'base_attack', 'base_defense', 'base_defense', 'base_mana', 'base_mana'];
-const CHOICE_POOL = ['strike', 'weakpoint', 'heavy', 'pierce', 'ultimate', 'guard', 'fortress', 'managuard',
-  'meditate', 'focus', 'firstaid', 'potion', 'joker', 'mirror'];
+const CHOICE_POOL = ['strike', 'weakpoint', 'heavy', 'pierce', 'ultimate', 'dragon', 'guard', 'fortress', 'managuard',
+  'thornshield', 'meditate', 'focus', 'warcry', 'firstaid', 'potion', 'joker', 'mirror'];
 const DROUGHT_POOL = ['rusty_sword', 'rusty_sword', 'dull_spear', 'cracked', 'weak_mana'];
 
 // 카드 설명 문장을 자동으로 만든다

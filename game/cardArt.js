@@ -113,6 +113,21 @@ const ART = {
     <ellipse cx="100" cy="60" rx="31" ry="37" fill="#12081f"/><ellipse cx="100" cy="60" rx="31" ry="37" fill="url(#violet)" opacity=".55"/>
     <path d="M84 40 L108 26 M82 56 L118 34" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".6"/>
     <path d="M22 60 H50 M38 50 L50 60 L38 70" stroke="#ff5a5a" stroke-width="4" fill="none"/><path d="M178 60 H150 M162 50 L150 60 L162 70" stroke="#ff5a5a" stroke-width="4" fill="none"/>`,
+  dragon: () => `<ellipse cx="100" cy="80" rx="84" ry="56" fill="url(#ember)" opacity=".8" filter="url(#glow)"/>
+    <path d="M40 100 Q44 58 86 48 L106 22 L110 50 Q146 50 164 74 L136 78 L156 100 Q120 108 96 100 Q70 122 40 100 Z" fill="#1a0a08" stroke="url(#gold)" stroke-width="2.2"/>
+    <path d="M86 48 L72 24 L96 42 M110 50 L126 30 L122 56" stroke="url(#gold)" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="M96 70 Q106 62 118 70 Q108 76 96 70 Z" fill="#ffb13d"/><circle cx="108" cy="69" r="2.2" fill="#fff"/>
+    <path d="M136 78 L152 66 L146 82 L164 82 L146 90 L158 102" stroke="#ffd36b" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <path d="M104 96 l4 8 l4 -8 M120 98 l4 8 l4 -8" stroke="#f4f7fa" stroke-width="2" fill="none"/>` + sparks('#fff0b3', [[40, 30, 2], [164, 36, 1.8], [30, 74, 1.3], [174, 100, 1.6], [92, 16, 1.4]]),
+  thornshield: () => `<ellipse cx="100" cy="74" rx="54" ry="54" fill="url(#arcane)" opacity=".35" filter="url(#glow)"/>` + heater('url(#dark)', 'url(#steel)',
+    `<path d="M100 40 L108 72 L100 104 L92 72 Z" fill="url(#steel)" stroke="#1a1f25"/><path d="M72 60 L100 72 L72 84 Z M128 60 L100 72 L128 84 Z" fill="url(#steel)" stroke="#1a1f25"/>
+     <circle cx="100" cy="72" r="6" fill="url(#gold)" stroke="#2a1a06"/>`) +
+    `<g fill="#c9d1da" stroke="#1a1f25" stroke-width="1"><path d="M56 30 l-14 -8 l6 16 z"/><path d="M144 30 l14 -8 l-6 16 z"/><path d="M60 62 l-16 0 l12 10 z"/><path d="M140 62 l16 0 l-12 10 z"/><path d="M72 100 l-12 10 l16 0 z"/><path d="M128 100 l12 10 l-16 0 z"/></g>`,
+  warcry: () => `<ellipse cx="100" cy="72" rx="70" ry="48" fill="url(#violet)" opacity=".4" filter="url(#glow)"/>
+    <path d="M40 104 Q58 74 96 66 L146 34 L146 108 L96 88 Q64 100 40 104 Z" fill="url(#gold)" stroke="#2a1a06" stroke-width="2"/>
+    <path d="M96 66 L96 88 M118 54 L118 98" stroke="#4f340c" stroke-width="2"/><ellipse cx="146" cy="71" rx="8" ry="37" fill="#2a1a06" stroke="url(#gold)" stroke-width="2"/>
+    <path d="M44 100 Q38 112 52 114" stroke="url(#leather)" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <path d="M166 50 Q182 71 166 92 M176 40 Q198 71 176 102" stroke="#ff7a3d" stroke-width="3" fill="none" stroke-linecap="round" opacity=".9"/>` + sparks('#ffd08a', [[60, 40, 1.6], [34, 70, 1.3], [170, 24, 1.4], [120, 124, 1.5]]),
   rusty_sword: () => sword({ rot: -30, blade: 'url(#rust)', edge: '#2a180c' }) + sparks('#5a3a1a', [[96, 58, 3], [108, 44, 2.4], [90, 74, 2]]),
   dull_spear: () => `<g transform="translate(100 72) rotate(-40)"><rect x="-3" y="-24" width="6" height="84" rx="2" fill="url(#leather)"/><path d="M0,-60 L10,-26 L0,-20 L-10,-26 Z" fill="url(#rust)" stroke="#2a180c" stroke-width="1.5"/><path d="M-10 -26 L-4 -30" stroke="#2a180c"/></g>`,
   cracked: () => heater('url(#rust)', 'url(#dark)', `<path d="M100 28 L92 54 L106 70 L94 92 L100 118" stroke="#050505" stroke-width="3.5" fill="none"/><path d="M92 54 L76 60 M106 70 L124 64" stroke="#050505" stroke-width="2" fill="none"/>`),
