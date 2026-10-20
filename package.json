@@ -1,0 +1,16 @@
+{
+  "name": "decimal-card-battle",
+  "version": "1.0.0",
+  "description": "소수의 나눗셈 로그라이크 카드 대전 (6학년 2학기)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "socket.io": "^4.8.1"
+  }
+}
