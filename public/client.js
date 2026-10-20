@@ -136,7 +136,7 @@ function renderLobby() {
 // ---------- 연습장 (펜/손가락으로 풀이 적기) ----------
 // 획을 0~1 비율 좌표로 저장해서 화면 크기가 바뀌어도 그대로 다시 그려요. 문제가 바뀌면 지워져요.
 const scratch = { pid: null, strokes: [], tool: 'white', penSeen: false };
-const PAD_COLORS = { white: '#f3ead6', yellow: '#ffd35c', cyan: '#6fd8ff' };
+const PAD_COLORS = { white: '#f3ead6' };
 function initPad() {
   const cv = $('#pad'); if (!cv) return;
   const dpr = window.devicePixelRatio || 1, r = cv.getBoundingClientRect();
@@ -187,14 +187,12 @@ function renderProblem() {
     ? `<div class="opts">${p.options.map((svg, i) => `<button class="opt" data-i="${i}"><span class="no">${'①②③④'[i]}</span>${svg}</button>`).join('')}</div>`
     : `<div class="ans"><input id="in" inputmode="decimal" autocomplete="off" placeholder="?"><span>${esc(p.unit)}</span><button class="btn" id="ok">확인</button></div>`;
   if (scratch.pid !== p.id) { scratch.pid = p.id; scratch.strokes = []; }   // 새 문제면 연습장을 비움 (같은 문제에서 오답 후 다시 그려져도 유지)
-  const noFig = p.type === 'compare';   // 그림이 필요 없는 문제는 그림 칸을 빼고 연습장을 넓게 (여러 식을 계산해야 해서)
+  const noFig = p.type === 'compare' || p.type === 'point';   // 그림이 필요 없는 문제는 그림 칸을 빼고 연습장을 넓게 (여러 식을 계산해야 해서)
   app.innerHTML = topbar() + `<div class="screen"><div class="problem-wrap pad ${noFig ? 'nofig' : ''}">
     ${noFig ? '' : `<div class="panel figs-panel"><div class="figs ${p.figs.length > 2 ? 'many' : p.figs.length === 2 ? 'two' : ''}">${p.figs.map(f => `<div class="fig">${f.svg}<div class="cap">${esc(f.cap)}</div></div>`).join('')}</div></div>`}
     <div class="panel pad-panel">
       <div class="pad-tools">
-        <button data-tool="white" class="pt"><i style="background:#f3ead6"></i>흰색</button>
-        <button data-tool="yellow" class="pt"><i style="background:#ffd35c"></i>노랑</button>
-        <button data-tool="cyan" class="pt"><i style="background:#6fd8ff"></i>파랑</button>
+        <button data-tool="white" class="pt"><i style="background:#f3ead6"></i>펜</button>
         <button data-tool="erase" class="pt">지우개</button>
         <span class="sp"></span>
         <button id="padUndo" class="pt">되돌리기</button>
