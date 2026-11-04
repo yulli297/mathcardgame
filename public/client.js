@@ -32,12 +32,9 @@ const TYPE_KR = { attack: '공격', defense: '방어', skill: '스킬' };
 function cardHTML(id, { cls = '', attrs = '' } = {}) {
   const c = CARDS[id]; if (!c) return '';
   const t = c.drought ? 'drought' : c.joker ? 'joker' : c.type;
-  return `<div class="card ${c.type} ${t} ${cls}" ${attrs}>
-    <div class="cost">${c.cost}</div>
-    <div class="art" style="background-image:url('/img/card/${id}')"></div>
-    <div class="name">${esc(c.name)}</div>
-    <div class="kind">${TYPE_KR[c.type]}${c.drought ? ' · 가뭄' : ''}</div>
-    <div class="desc">${esc(c.desc)}</div></div>`;
+  // 카드 전체 그림(public/img/custom/cards/<id>.jpg)을 그대로 사용
+  return `<div class="card ${c.type} ${t} ${cls}" ${attrs} title="${esc(c.name)} (MP ${c.cost}) - ${esc(c.desc)}">
+    <div class="full" style="background-image:url('/img/card/${id}')"></div>${c.drought ? '<div class="dtag">가뭄</div>' : ''}</div>`;
 }
 const backHTML = (cls = '', attrs = '') => `<div class="cback ${cls}" ${attrs}></div>`;
 function toast(msg, ms = 2200) { const t = $('#toast'); t.textContent = msg; t.classList.remove('hidden'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.add('hidden'), ms); }
