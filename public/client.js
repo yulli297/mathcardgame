@@ -61,6 +61,35 @@ const HOWTO_BATTLE = `<h2>대결 진행 방법</h2><ol>
 <li>상대보다 뛰어난 전략을 사용해서 상대의 HP를 먼저 0으로 만드는 쪽이 승리합니다.</li></ol>
 <div class="row"><button class="btn huge" data-close>확인</button></div>`;
 
+// ---------- 업데이트 소식 팝업 (기기마다 한 번) ----------
+// 다음 업데이트 때는 UPDATE_VER 값과 내용만 바꾸면 모든 학생에게 다시 한 번 보입니다.
+const UPDATE_VER = '2026-11-05';
+const updateNotice = () => `<h2>업데이트 소식</h2>
+<div class="update-notes">
+<h3>1. MP가 10으로 늘었어요</h3>
+<ul><li>시작 MP와 최대 MP가 모두 <b>10</b>이에요.</li><li>비싼 카드를 더 자주 쓸 수 있어요.</li></ul>
+<h3>2. 방어 카드가 2턴 동안 지켜 줘요</h3>
+<ul><li>방어 카드의 방어력은 <b>낸 턴과 다음 턴까지</b> 유지돼요.</li>
+<li>유지 중인 방어력은 이름 옆에 <b>유지 방어</b>로 표시돼요.</li>
+<li>"완전히 막으면" 보너스는 카드를 낸 턴에만 받아요.</li></ul>
+<h3>3. 새 카드 3장이 생겼어요</h3>
+<div class="cards-row update-cards">${['shatter', 'manasurge', 'comeback'].map(id => cardHTML(id)).join('')}</div>
+<ul><li><b>방패 깨기</b> (MP 2): 상대 방어력을 모두 없애고 피해 2</li>
+<li><b>마나 폭주</b> (MP 2): MP를 가득 채우고 다음 턴 공격 +2 (덱에 1장만)</li>
+<li><b>역전의 일격</b> (MP 4): 내가 잃은 HP의 70%만큼 피해 (덱에 1장만)</li></ul>
+<h3>4. 문제 화면에 연습장이 생겼어요</h3>
+<ul><li>화면 오른쪽 연습장에 펜으로 직접 계산할 수 있어요.</li>
+<li>지우개, 되돌리기, 모두 지우기 기능이 있어요.</li>
+<li><b>왼손잡이 버튼</b>을 누르면 연습장이 왼쪽으로 옮겨져요. 한 번 정하면 그 기기에서는 계속 기억해요.</li></ul>
+</div>
+<div class="row"><button class="btn huge" data-close>확인</button></div>`;
+function maybeShowUpdate() {
+  if (!S || ['queue', 'battle'].includes(S.stage)) return;          // 대결 중에는 띄우지 않음
+  if (store.get('seenUpdate') === UPDATE_VER) return;
+  if (!$('#modal').classList.contains('hidden')) return;             // 다른 안내창이 떠 있으면 다음에
+  modal(updateNotice(), () => store.set('seenUpdate', UPDATE_VER));
+}
+
 function showDeck() {
   if (!S) return;
   const extra = CONFIG.DECK_SIZE - S.deck.length;
@@ -93,6 +122,7 @@ function render() {
   else if (!bgNow || bgNow === 4) setBg(1);
   ({ lobby: renderLobby, problem: renderProblem, offer: renderOffer, ready: renderReady, queue: renderQueue,
      battle: renderBattle, result: renderResult, inherit: renderInherit }[S.stage] || renderLobby)();
+  maybeShowUpdate();
 }
 const topbar = () => `<div class="topbar"><span class="big">${esc(S.code)} · ${S.num}번 모험가</span>
   <span class="progress">카드 ${S.deck.length}/${CONFIG.DECK_SIZE}<span class="pbar"><i style="width:${S.deck.length / CONFIG.DECK_SIZE * 100}%"></i></span></span></div>`;

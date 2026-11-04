@@ -205,3 +205,9 @@ button{font-family:inherit;cursor:pointer}
 
 /* 소수의 나눗셈: 보기가 글자(식)로 나오는 문제 */
 .otext{font-size:clamp(20px,4.4vh,38px);font-weight:700;color:var(--gold);font-family:"Jua",sans-serif;letter-spacing:.02em}
+/* 업데이트 소식 팝업 */
+.update-notes{font-size:clamp(14px,2.5vh,20px);line-height:1.6;max-width:72vw}
+.update-notes h3{color:var(--gold);margin:2vh 0 .6vh;font-size:clamp(16px,3vh,24px)}
+.update-notes ul{margin:0;padding-left:1.6em}
+.update-notes .update-cards{margin:1vh 0 1.2vh}
+.update-notes .update-cards .card{--w:min(11vw,19vh)}
