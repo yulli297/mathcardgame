@@ -152,8 +152,8 @@ button{font-family:inherit;cursor:pointer}
 .hpbar{height:calc(var(--B)*.028);flex-shrink:0;background:#1e0a0c;border:1px solid #5a1a20;position:relative;overflow:hidden;border-radius:2px}
 .hpbar i{display:block;height:100%;background:linear-gradient(180deg,#ff5a5a,#a0101e);box-shadow:inset 0 1px 0 rgba(255,255,255,.3)}
 .hpbar span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:calc(var(--B)*.021);text-shadow:0 1px 2px #000}
-.orbs{display:flex;gap:calc(var(--B)*.008)}
-.orb{width:calc(var(--B)*.026);height:calc(var(--B)*.026);border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#5ec8ff 40%,#0d4a8a);box-shadow:0 0 calc(var(--B)*.012) rgba(94,200,255,.9);border:1px solid #9fe0ff}
+.orbs{display:flex;gap:calc(var(--B)*.004)}
+.orb{width:calc(var(--B)*.016);height:calc(var(--B)*.016);box-sizing:border-box;flex:none;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#5ec8ff 40%,#0d4a8a);box-shadow:0 0 calc(var(--B)*.012) rgba(94,200,255,.9);border:1px solid #9fe0ff}
 .orb.empty{background:#0a0f18;box-shadow:inset 0 0 4px #000;border:1px solid #2a3a50}
 .chips{display:flex;gap:4px;flex-wrap:wrap;min-height:calc(var(--B)*.026)}
 .chip{font-size:calc(var(--B)*.017);padding:0 5px;white-space:nowrap;border-radius:2px;background:#3a1a08;color:#ffcf7a;border:1px solid #8a5a14}

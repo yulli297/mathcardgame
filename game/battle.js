@@ -10,7 +10,7 @@ function makeSide(info) {
     id: info.id, name: info.name, isBot: !!info.isBot,
     hp: CONFIG.HP, maxHp: CONFIG.HP, mp: CONFIG.MP, maxMp: CONFIG.MP,
     draw: shuffle(info.deck.slice()), grave: [], hand: [],
-    buff: 0, nextBuff: 0, choice: undefined, // undefined=아직, null=패스, 숫자=손패 위치
+    buff: 0, nextBuff: 0, carry: 0, choice: undefined, // undefined=아직, null=패스, 숫자=손패 위치
   };
 }
 
@@ -60,6 +60,8 @@ class Battle {
       e.fired = seq;
       return e;
     });
+    // 0순위: 지난 턴에 낸 방어 카드의 방어력이 이번 턴까지 유지됨
+    this.sides.forEach((s, i) => { effs[i].shield += s.carry; s.carry = 0; });
     // 1순위: 스킬 (자기에게만 적용)
     this.sides.forEach((s, i) => { for (const id of effs[i].fired) { const c = CARDS[id]; if (c.type !== 'skill') continue;
       if (c.fillMp) { const before = s.mp; s.mp = s.maxMp; effs[i].mpGain += s.mp - before; }
@@ -74,7 +76,12 @@ class Battle {
       effs[i].shield += c.shield; effs[i].defCards++; effs[i].blockBonus += c.blockBonus || 0; effs[i].mpOnBlock += c.mpOnBlock || 0;
     } });
     // 3순위: 공격 (양쪽 동시에 계산 후 한꺼번에 적용)
+    // 방패 깨기: 공격 계산 전에 상대 방어력(유지 중인 방어력 포함)을 모두 없앰
+    for (let i = 0; i < 2; i++) if (effs[i].fired.some(id => CARDS[id].shatter) && effs[1 - i].shield > 0) {
+      effs[1 - i].shield = 0; effs[1 - i].shattered = true;
+    }
     const dmgTo = [0, 0]; const notes = [[], []];
+    for (let i = 0; i < 2; i++) if (effs[i].shattered) { notes[i].push('방패가 깨졌어요!'); notes[1 - i].push('상대 방패를 깨뜨림!'); }
     for (let i = 0; i < 2; i++) {
       const a = this.sides[i], ea = effs[i], ed = effs[1 - i], d = this.sides[1 - i];
       const atks = ea.fired.filter(id => CARDS[id].type === 'attack');
@@ -100,6 +107,11 @@ class Battle {
       }
     }
     this.sides.forEach((s, i) => { s.hp -= dmgTo[i]; });
+    // 이번 턴에 낸 방어 카드의 방어력은 다음 턴까지 유지 (깨졌으면 사라짐, 한 번만 이어짐)
+    this.sides.forEach((s, i) => {
+      if (effs[i].shattered) return;
+      s.carry = effs[i].fired.reduce((t, id) => t + (CARDS[id].type === 'defense' ? CARDS[id].shield : 0), 0);
+    });
     // 버프 정리: 이번 턴 버프는 사라지고 다음 턴 버프가 적용됨
     for (const s of this.sides) { s.buff = s.nextBuff; s.nextBuff = 0; s.grave.push(...s.hand); s.hand = []; }
 
@@ -117,7 +129,7 @@ class Battle {
   // 각 학생에게 보낼 화면 정보 (상대 손패는 숨김)
   view(id) {
     const me = this.side(id), op = this.other(id);
-    const pub = s => ({ name: s.name, hp: s.hp, maxHp: s.maxHp, mp: s.mp, maxMp: s.maxMp, buff: s.buff, deckLeft: s.draw.length, isBot: s.isBot });
+    const pub = s => ({ name: s.name, hp: s.hp, maxHp: s.maxHp, mp: s.mp, maxMp: s.maxMp, buff: s.buff, carry: s.carry, deckLeft: s.draw.length, isBot: s.isBot });
     return { turn: this.turn, me: { ...pub(me), hand: me.hand, chosen: me.choice !== undefined, choice: me.choice },
       op: { ...pub(op), chosen: op.choice !== undefined }, over: this.over, winner: this.winner };
   }
@@ -133,6 +145,7 @@ function botScore(id, me, op, hand) {
     const d = c.dmg + me.buff;
     let exp = c.pierce ? d : 0.65 * d + 0.35 * Math.max(0, d - 2.8);
     if (c.doubleVsShield) exp = 0.65 * d + 0.35 * Math.max(0, 2 * d - 2.8);
+    if (c.shatter) exp = d + (op.carry ? 0.5 : 0);
     sc += 1.2 * exp + (d >= op.hp ? 8 : 0) + (me.buff ? 1 : 0);
   }
   if (c.dmgLost) { const d = Math.round((me.maxHp - me.hp) * c.dmgLost) + me.buff; sc += 1.2 * (0.65 * d + 0.35 * Math.max(0, d - 2.8)) + (d >= op.hp ? 8 : 0); }

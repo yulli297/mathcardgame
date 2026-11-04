@@ -244,7 +244,7 @@ function renderQueue() {
 // ---------- 대결 ----------
 const orbs = (n, max) => `<div class="orbs">${Array.from({ length: max }, (_, i) => `<span class="orb ${i < n ? '' : 'empty'}"></span>`).join('')}</div>`;
 const hpbar = (hp, max) => `<div class="hpbar"><i style="width:${Math.max(0, hp) / max * 100}%"></i><span>HP ${Math.max(0, hp)} / ${max}</span></div>`;
-const chips = (buff, shield) => `<span class="chips">${buff ? `<span class="chip">공격 +${buff}</span>` : ''}${shield ? `<span class="chip def">방어 ${shield}</span>` : ''}</span>`;
+const chips = (buff, shield, carry) => `<span class="chips">${buff ? `<span class="chip">공격 +${buff}</span>` : ''}${shield ? `<span class="chip def">방어 ${shield}</span>` : (carry ? `<span class="chip def">유지 방어 ${carry}</span>` : '')}</span>`;
 const cname = ids => ids.map(id => CARDS[id].name).join(' + ');
 
 function renderBattle() {
@@ -295,7 +295,7 @@ function renderBattle() {
     <div class="board">
       <div class="abs deckcount" style="left:2%;top:4.7%;width:10.6%;height:19.3%">상대 덱<b>${op.deckLeft}</b></div>
       <div class="abs stats ${hitOp}" style="left:75%;top:1.6%;width:23.5%;height:16.4%">
-        <div class="who"><span>${esc(op.name)}</span>${chips(op.buff, rv && rv.op.shield)}</div>${hpbar(op.hp, op.maxHp)}${orbs(op.mp, op.maxMp)}</div>
+        <div class="who"><span>${esc(op.name)}</span>${chips(op.buff, rv && rv.op.shield, !rv && op.carry)}</div>${hpbar(op.hp, op.maxHp)}${orbs(op.mp, op.maxMp)}</div>
       <div class="abs hand-op">${opHand}</div>
       <div class="abs slot slot-op">${opSlot}</div>
       <div class="abs note" style="top:42%">${rv ? rv.op.notes.map(esc).join(' · ') : ''}</div>
@@ -307,12 +307,12 @@ function renderBattle() {
       <div class="abs note" style="top:74%">${rv ? rv.me.notes.map(esc).join(' · ') : ''}</div>
       <div class="abs hand-me">${myHand}</div>
       <div class="abs stats ${hitMe}" style="left:2.2%;top:82.2%;width:23.4%;height:13.6%">
-        <div class="who"><span>나 (${S.num}번)</span>${chips(me.buff, rv && rv.me.shield)}</div>${hpbar(me.hp, me.maxHp)}${orbs(me.mp, me.maxMp)}</div>
+        <div class="who"><span>나 (${S.num}번)</span>${chips(me.buff, rv && rv.me.shield, !rv && me.carry)}</div>${hpbar(me.hp, me.maxHp)}${orbs(me.mp, me.maxMp)}</div>
       <div class="abs deckcount" style="left:86.8%;top:77%;width:11%;height:16.5%">내 덱<b>${me.deckLeft}</b></div>
       ${floats}
     </div>
     <div class="side" style="align-items:center"><h3>${selCard ? '선택한 카드' : '내 상태'}</h3>${selCard ||
-      `<div class="log" style="width:100%"><div>HP ${me.hp} / ${me.maxHp}</div><div>MP ${me.mp} / ${me.maxMp}</div>${me.buff ? `<div class="me">이번 턴 공격 +${me.buff}</div>` : ''}<div>카드를 누르면 여기에 크게 보여요.</div></div>`}</div>
+      `<div class="log" style="width:100%"><div>HP ${me.hp} / ${me.maxHp}</div><div>MP ${me.mp} / ${me.maxMp}</div>${me.buff ? `<div class="me">이번 턴 공격 +${me.buff}</div>` : ''}${me.carry ? `<div class="me">지난 턴 방어 ${me.carry} 유지 중</div>` : ''}<div>카드를 누르면 여기에 크게 보여요.</div></div>`}</div>
   </div>`;
 
   app.querySelectorAll('.flip.start').forEach(el => requestAnimationFrame(() => requestAnimationFrame(() => el.classList.remove('start'))));

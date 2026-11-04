@@ -4,7 +4,7 @@
 
 const CONFIG = {
   HP: 15,               // 시작 HP (= 최대 HP)
-  MP: 7,                // 시작 MP (= 최대 MP)
+  MP: 10,               // 시작 MP (= 최대 MP)
   TURN_SECONDS: 15,     // 한 턴 선택 제한 시간(초). 넘기면 자동 패스
   REVEAL_SECONDS: 3,    // 카드 공개 후 다음 턴까지 보여 주는 시간(초)
   DECK_SIZE: 18,        // 덱 총량
@@ -18,6 +18,8 @@ const CONFIG = {
 // shield: 방어력   blockBonus: 완전히 막으면 다음 턴 공격 +1   mpOnBlock: 완전히 막으면 MP 회복
 // gainMp: MP 회복   heal: HP 회복   buffNext: 다음 턴 공격 +N
 // joker: 남은 카드 모두 사용   reflect: 이번 턴 상대 공격 반사   unique: 덱에 1장만
+// shatter: 상대의 방어력(다음 턴까지 유지되는 방어력 포함)을 모두 없앤 뒤 피해
+// ※ 방어 카드(type: defense)의 방어력은 사용한 턴과 다음 턴, 2턴 동안 유지됨
 const CARDS = {
   // ---------- 기본 카드 ----------
   base_attack:  { name: '기본 공격',   type: 'attack',  cost: 1, dmg: 2 },
@@ -44,6 +46,7 @@ const CARDS = {
   mirror:       { name: '반사 거울',   type: 'skill',   cost: 1, reflect: true },
   manasurge:    { name: '마나 폭주',   type: 'skill',   cost: 2, fillMp: true, buffNext: 2, unique: true },
   comeback:     { name: '역전의 일격', type: 'attack',  cost: 4, dmg: 0, dmgLost: 0.7, unique: true },
+  shatter:      { name: '방패 깨기',   type: 'attack',  cost: 2, dmg: 2, shatter: true },
 
   // ---------- 가뭄 덱 전용 (비싸거나 보너스가 없는 구조적 약점, 시뮬레이션 승률 약 20%) ----------
   rusty_sword:  { name: '녹슨 대검',   type: 'attack',  cost: 4, dmg: 4, drought: true },
@@ -54,7 +57,7 @@ const CARDS = {
 
 const BASE_DECK = ['base_attack', 'base_attack', 'base_defense', 'base_defense', 'base_mana', 'base_mana'];
 const CHOICE_POOL = ['strike', 'weakpoint', 'heavy', 'pierce', 'ultimate', 'dragon', 'guard', 'fortress', 'managuard',
-  'thornshield', 'meditate', 'focus', 'warcry', 'firstaid', 'potion', 'joker', 'mirror', 'manasurge', 'comeback'];
+  'thornshield', 'meditate', 'focus', 'warcry', 'firstaid', 'potion', 'joker', 'mirror', 'manasurge', 'comeback', 'shatter'];
 const DROUGHT_POOL = ['rusty_sword', 'rusty_sword', 'dull_spear', 'cracked', 'weak_mana'];
 
 // 카드 설명 문장을 자동으로 만든다
@@ -63,10 +66,11 @@ function describe(c) {
   if (c.dmg) s.push(`피해 ${c.dmg}`);
   if (c.dmgLost) s.push(`내가 잃은 HP의 ${Math.round(c.dmgLost * 100)}% 피해, 반올림 (덱에 1장만)`);
   if (c.fillMp) s.push('MP를 가득 채움 (덱에 1장만)');
+  if (c.shatter) s.unshift('상대 방어력을 모두 없앰');
   if (c.pierce) s.push('방어 무시');
   if (c.doubleVsShield) s.push('상대가 방어하면 피해 2배');
   if (c.gainMp) s.push(`MP +${c.gainMp}`);
-  if (c.shield) s.push(`방어 ${c.shield}`);
+  if (c.shield) s.push(c.type === 'defense' ? `방어 ${c.shield} (다음 턴까지 유지)` : `방어 ${c.shield}`);
   if (c.heal) s.push(`HP +${c.heal}`);
   if (c.buffNext) s.push(`다음 턴 공격 +${c.buffNext}`);
   if (c.blockBonus) s.push(`완전히 막으면 다음 턴 공격 +${c.blockBonus}`);
