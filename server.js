@@ -55,7 +55,8 @@ app.get('/health', (req, res) => res.send('ok'));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ---------- 상태 (서버 메모리에만 저장) ----------
-const classes = new Map(); // code -> { code, size, students: {num: stu}, matches: [] }
+const classes = new Map(); // code -> { code, size, mode, students: {num: stu}, matches: [] }
+// mode: 'quiz'(문제를 풀고 카드 얻기, 기본) / 'game'(문제 없이 카드만 골라 덱 만들기)
 const battles = new Map(); // id -> { id, code, battle, nums: [numA, numB|null], timer, botTimer, remainingUntil }
 let battleSeq = 0;
 
@@ -64,9 +65,16 @@ function newStudent(num) {
     wrongStreak: 0, feedback: null, drought: false, typeBag: [], wins: 0, losses: 0, draws: 0,
     battleId: null, lastOpp: null, lastResult: null, round: 1 };
 }
-function createClass(code, size) {
+function createClass(code, size, mode = 'quiz') {
   const students = {}; for (let n = 1; n <= size; n++) students[n] = newStudent(n);
-  classes.set(code, { code, size, students, matches: [] });
+  classes.set(code, { code, size, mode: mode === 'game' ? 'game' : 'quiz', students, matches: [] });
+}
+// 다음 단계로: 덱이 다 차면 대결 준비, 아니면 (문제 모드) 문제 / (게임 모드) 바로 카드 선택
+function nextStep(cls, stu) {
+  stu.problem = null; stu.feedback = null;
+  if (stu.deck.length >= CONFIG.DECK_SIZE) { stu.stage = 'ready'; return; }
+  if (cls.mode === 'game') { stu.offer = makeOffer(stu); stu.stage = 'offer'; }
+  else { stu.stage = 'problem'; newProblem(stu); }
 }
 
 const socketOf = stu => stu.socketId && io.sockets.sockets.get(stu.socketId);
@@ -80,7 +88,7 @@ let problemSeq = 0;
 function newProblem(stu) { stu.problem = problems.nextProblem(stu); stu.problem.id = ++problemSeq; stu.feedback = null; }
 
 function studentView(cls, stu) {
-  const v = { code: cls.code, num: stu.num, stage: stu.stage, deck: stu.deck, deckSize: CONFIG.DECK_SIZE,
+  const v = { code: cls.code, mode: cls.mode, num: stu.num, stage: stu.stage, deck: stu.deck, deckSize: CONFIG.DECK_SIZE,
     feedback: stu.feedback, wrongStreak: stu.wrongStreak, drought: stu.drought, round: stu.round,
     record: { wins: stu.wins, losses: stu.losses, draws: stu.draws } };
   if (stu.stage === 'problem' && stu.problem) {
@@ -217,7 +225,7 @@ io.on('connection', socket => {
   });
   socket.on('start', () => { const c = ctx(); if (!c) return; const { cls, stu } = c;
     if (stu.stage !== 'lobby') return push(cls, stu);
-    if (stu.deck.length >= CONFIG.DECK_SIZE) stu.stage = 'ready'; else { stu.stage = 'problem'; newProblem(stu); }
+    nextStep(cls, stu);
     push(cls, stu); teacherPush();
   });
   socket.on('answer', ({ value }) => { const c = ctx(); if (!c) return; const { cls, stu } = c;
@@ -237,7 +245,7 @@ io.on('connection', socket => {
   socket.on('pick', ({ index }) => { const c = ctx(); if (!c) return; const { cls, stu } = c;
     if (stu.stage !== 'offer' || !stu.offer || !stu.offer[index]) return;
     stu.deck.push(stu.offer[index]); stu.offer = null;
-    if (stu.deck.length >= CONFIG.DECK_SIZE) { stu.stage = 'ready'; stu.problem = null; } else { stu.stage = 'problem'; newProblem(stu); }
+    nextStep(cls, stu);
     push(cls, stu); teacherPush();
   });
   socket.on('queue', () => { const c = ctx(); if (!c) return; const { cls, stu } = c;
@@ -262,7 +270,7 @@ io.on('connection', socket => {
     const uniq = [...new Set((indices || []).map(Number))].filter(i => i >= 0 && i < acquired.length);
     if (uniq.length !== Math.min(CONFIG.KEEP_COUNT, acquired.length)) return;
     stu.deck = BASE_DECK.concat(uniq.map(i => acquired[i]));
-    stu.round++; stu.drought = false; stu.wrongStreak = 0; stu.stage = 'problem'; newProblem(stu);
+    stu.round++; stu.drought = false; stu.wrongStreak = 0; nextStep(cls, stu);
     push(cls, stu); teacherPush();
   });
   socket.on('disconnect', () => {
@@ -277,11 +285,11 @@ io.on('connection', socket => {
     socket.data.teacher = true; socket.join('teachers'); cb && cb({ ok: true }); socket.emit('tState', teacherState());
   });
   const T = fn => (data, cb) => { if (!socket.data.teacher) return cb && cb({ ok: false, msg: '로그인이 필요해요.' }); fn(data || {}, cb); };
-  socket.on('tCreate', T(({ code, size }, cb) => {
+  socket.on('tCreate', T(({ code, size, mode }, cb) => {
     code = String(code || '').trim().slice(0, 12); size = Math.max(1, Math.min(40, Number(size) || 0));
     if (!code) return cb && cb({ ok: false, msg: '반 코드를 입력해 주세요.' });
     if (classes.has(code)) return cb && cb({ ok: false, msg: '이미 있는 반 코드예요.' });
-    createClass(code, size); cb && cb({ ok: true }); teacherPush();
+    createClass(code, size, mode); cb && cb({ ok: true }); teacherPush();
   }));
   socket.on('tDelete', T(({ code }, cb) => {
     const cls = classes.get(code); if (!cls) return;
@@ -298,6 +306,16 @@ io.on('connection', socket => {
     for (const stu of Object.values(cls.students)) resetStudent(cls, stu);
     cls.matches = []; cb && cb({ ok: true }); teacherPush();
   }));
+  // 반 모드 바꾸기: 문제 풀이 중인 학생은 바로 카드 선택으로(게임 모드), 카드 선택 중인 학생은 고른 뒤 문제로(문제 모드)
+  socket.on('tSetMode', T(({ code, mode }, cb) => {
+    const cls = classes.get(code); if (!cls) return;
+    cls.mode = mode === 'game' ? 'game' : 'quiz';
+    for (const stu of Object.values(cls.students)) {
+      if (cls.mode === 'game' && stu.stage === 'problem') { stu.wrongStreak = 0; nextStep(cls, stu); }
+      push(cls, stu);
+    }
+    cb && cb({ ok: true }); teacherPush();
+  }));
   socket.on('tForceMatch', T(({ code }, cb) => {
     const cls = classes.get(code); if (!cls) return; tryMatch(cls, true); cb && cb({ ok: true });
   }));
@@ -312,7 +330,7 @@ function resetStudent(cls, stu) {
 // ---------- 교사 화면용 상태 ----------
 const STAGE_LABEL = { lobby: '대기', problem: '문제 풀이', offer: '카드 선택', ready: '덱 완성', queue: '대결 대기', battle: '대결 중', result: '결과 확인', inherit: '카드 계승' };
 function teacherState() {
-  return { classes: [...classes.values()].map(cls => ({ code: cls.code, size: cls.size, queue: queueInfo(cls),
+  return { classes: [...classes.values()].map(cls => ({ code: cls.code, size: cls.size, mode: cls.mode, queue: queueInfo(cls),
     students: Object.values(cls.students).map(s => {
       let hp = null;
       if (s.battleId && battles.has(s.battleId)) { const b = battles.get(s.battleId).battle; const me = b.side('S' + s.num), op = b.other('S' + s.num); hp = `${me.hp} vs ${op.hp} (${op.name})`; }

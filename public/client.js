@@ -45,13 +45,22 @@ function modal(html, onClose) {
 }
 
 // ---------- 게임 방법 팝업 ----------
-const HOWTO_GAME = `<h2>게임 진행 방법</h2><ol>
+const isGame = () => S && S.mode === 'game'; // 게임 모드: 문제 없이 카드만 골라 덱 만들기
+const HOWTO_GAME_QUIZ = `<h2>게임 진행 방법</h2><ol>
 <li>이 게임은 카드를 모아 대결하는 카드게임입니다.</li>
 <li>문제를 한 문제 풀 때마다 랜덤하게 등장하는 3장의 카드 중에 한 장을 골라 진행합니다.</li>
 <li>카드의 종류는 공격, 방어, 스킬 카드가 있습니다.</li>
 <li>기본 카드는 공격 2장, 방어 2장, 스킬 2장이 있습니다.</li>
 <li>문제를 열심히 풀어 자신만의 카드 덱을 만들어 친구와 대결하세요.</li></ol>
 <div class="row"><button class="btn huge" data-close>확인</button></div>`;
+const HOWTO_GAME_PLAY = `<h2>게임 진행 방법</h2><ol>
+<li>이 게임은 카드를 모아 대결하는 카드게임입니다.</li>
+<li>랜덤하게 등장하는 3장의 카드 중에 한 장을 고르는 것을 반복해서 덱을 만듭니다. (게임 모드: 문제 없이 진행)</li>
+<li>카드의 종류는 공격, 방어, 스킬 카드가 있습니다.</li>
+<li>기본 카드는 공격 2장, 방어 2장, 스킬 2장이 있습니다.</li>
+<li>전략을 잘 세워 자신만의 카드 덱을 만들어 친구와 대결하세요.</li></ol>
+<div class="row"><button class="btn huge" data-close>확인</button></div>`;
+const howtoGame = () => isGame() ? HOWTO_GAME_PLAY : HOWTO_GAME_QUIZ;
 const HOWTO_BATTLE = `<h2>대결 진행 방법</h2><ol>
 <li>매턴마다 내 카드 3장 중 한 장을 선택해서 사용할 수 있습니다.</li>
 <li>나와 상대가 카드를 다 선택해야 게임이 진행됩니다.</li>
@@ -154,10 +163,10 @@ function renderNumbers() {
 }
 function renderLobby() {
   app.innerHTML = `<div class="screen">${hero(`${esc(S.code)} ${S.num}번 모험가, 미궁의 입구에 섰습니다.`)}
-    <div class="panel center-panel"><p class="sub" style="font-size:clamp(16px,3vh,24px)">문제를 풀 때마다 카드를 얻고<br>18장의 덱으로 친구와 겨루세요.</p>
+    <div class="panel center-panel"><p class="sub" style="font-size:clamp(16px,3vh,24px)">${isGame() ? '카드를 한 장씩 골라' : '문제를 풀 때마다 카드를 얻고'}<br>18장의 덱으로 친구와 겨루세요.</p>
     <button class="btn huge" id="go">모험 시작</button>
     <div class="row" style="margin-top:3vh"><button class="btn dark" id="out">번호 바꾸기</button></div></div></div>`;
-  $('#go').onclick = () => { tryLandscape(); modal(HOWTO_GAME, () => socket.emit('start')); };
+  $('#go').onclick = () => { tryLandscape(); modal(howtoGame(), () => socket.emit('start')); };
   $('#out').onclick = () => { store.del('login'); location.reload(); };
 }
 // ---------- 연습장 (펜/손가락으로 풀이 적기) ----------
@@ -244,7 +253,7 @@ function renderProblem() {
 }
 function renderOffer() {
   app.innerHTML = topbar() + `<div class="screen" style="flex-direction:column;gap:3vh">
-    <h1 class="title" style="font-size:clamp(28px,6vh,52px)">정답! 보상을 고르세요</h1>
+    <h1 class="title" style="font-size:clamp(28px,6vh,52px)">${isGame() ? '카드를 한 장 고르세요' : '정답! 보상을 고르세요'}</h1>
     <div class="cards-row" style="gap:3vw">${S.offer.map((id, i) => cardHTML(id, { cls: 'pick draw-in', attrs: `data-i="${i}" style="--w:min(19vw,40vh);animation-delay:${i * 0.12}s"` })).join('')}</div>
     <p class="sub">카드를 누르면 덱에 들어가요</p></div>`;
   app.querySelectorAll('.card.pick').forEach(el => el.onclick = () => socket.emit('pick', { index: Number(el.dataset.i) }));
@@ -369,7 +378,7 @@ function renderInherit() {
   const draw = () => {
     app.innerHTML = `<div class="screen" style="flex-direction:column;gap:1.6vh;padding-top:2vh">
       <h1 class="title" style="font-size:clamp(22px,4.6vh,38px)">다음 모험에 가져갈 카드 ${need}장 (${picked.size}/${need})</h1>
-      <p class="sub" style="margin:0">기본 카드 6장과 고른 ${need}장을 들고, 문제 ${CONFIG.DECK_SIZE - BASE.length - need}개를 더 풀어 덱을 완성해요.</p>
+      <p class="sub" style="margin:0">기본 카드 6장과 고른 ${need}장을 들고, ${isGame() ? `카드 ${CONFIG.DECK_SIZE - BASE.length - need}장을 더 골라` : `문제 ${CONFIG.DECK_SIZE - BASE.length - need}개를 더 풀어`} 덱을 완성해요.</p>
       <div class="deck-grid">${acq.map((id, i) => cardHTML(id, { cls: 'pick' + (picked.has(i) ? ' sel' : ''), attrs: `data-i="${i}" style="--w:min(11vw,24vh)"` })).join('')}</div>
       <button class="btn huge" id="done" ${picked.size === need ? '' : 'disabled'}>선택 완료</button></div>`;
     app.querySelectorAll('.card.pick').forEach(el => el.onclick = () => { const i = Number(el.dataset.i);
